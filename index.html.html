@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For Syeda Imama Saalar</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-red: #ff4d6d;
+            --soft-pink: #ffccd5;
+            --deep-red: #c9184a;
+            --bg-gradient: linear-gradient(180deg, #fff0f3 0%, #ffccd5 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: background 2s ease;
+        }
+
+        /* Music Toggle */
+        #music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Screen States */
+        .screen {
+            position: absolute;
+            width: 90%;
+            max-width: 400px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* UI Elements */
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: var(--deep-red);
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        .btn-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        #yes-btn {
+            background-color: var(--primary-red);
+            color: white;
+            z-index: 10;
+        }
+
+        #no-btn {
+            background-color: #fff;
+            color: var(--deep-red);
+            position: absolute;
+            white-space: nowrap;
+        }
+
+        /* Celebration Overlays */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Heart Name Animation */
+        #name-container {
+            display: none;
+            position: relative;
+            z-index: 60;
+        }
+
+        .glowing-heart-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: #ff0040;
+            text-shadow: 0 0 10px rgba(255,0,64,0.5), 0 0 20px rgba(255,0,64,0.3);
+            animation: heartBeat 1.5s infinite;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+
+        /* Letter Styling */
+        .letter-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-top: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #444;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .letter-card h2 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--deep-red);
+            margin-bottom: 15px;
+        }
+
+        .finish-btn {
+            margin-top: 20px;
+            background: var(--deep-red);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: none;
+            font-weight: 600;
+        }
+
+        /* Final Goodbye Screen */
+        #final-screen {
+            background: black;
+            color: white;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            justify-content: center;
+            font-family: 'Caveat', cursive;
+            font-size: 2.5rem;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .floating-emoji {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatUp 3s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="music-control" onclick="toggleMusic()">🔇</div>
+    <audio id="bg-music" loop>
+        <source src="https://www.chosic.com/wp-content/uploads/2021/11/Only-Love-Can-Break-Your-Heart-Piano-Version.mp3" type="audio/mpeg">
+    </audio>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Screen 1: Question -->
+    <section id="screen-question" class="screen active">
+        <h1>Will you be my Valentine?</h1>
+        <div class="btn-container">
+            <button id="yes-btn" class="btn" onclick="celebrate()">Yes</button>
+            <button id="no-btn" class="btn" onmouseover="dodge()" onclick="dodge()" ontouchstart="dodge()">No</button>
+        </div>
+    </section>
+
+    <!-- Screen 2: Celebration & Name -->
+    <section id="screen-letter" class="screen">
+        <div id="name-container">
+            <div class="glowing-heart-text">SYEDA IMAMA SAALAR</div>
+        </div>
+        
+        <div class="letter-card">
+            <h2>Happy Valentine Day</h2>
+            <p>My dearest <strong>SYEDA IMAMA SAALAR</strong>,</p><br>
+            <p>I may not have big words or a fancy way of speaking, but my heart knows only you. Even though distance stands between us, my love for you feels close every single day. From morning till night, your name lives in my thoughts and my prayers.</p><br>
+            <p>I miss you in the quiet moments, under the open sky, and in every little dream I see for my future. I don’t have much to offer, but I promise you my loyalty, my respect, and a love that is true and honest.</p><br>
+            <p>No matter how far you are, my heart waits only for you.</p>
+            <p>Happy Valentine Day to my future wife <br><strong>IMAMA ‘CHURAIL’ ❤️</strong></p>
+            
+            <button class="finish-btn" onclick="endExperience()">Finish</button>
+        </div>
+    </section>
+
+    <!-- Screen 3: Goodbye -->
+    <section id="final-screen" class="screen">
+        <div>Miss you Churail 😔💔🥺</div>
+    </section>
+
+    <script>
+        const noBtn = document.getElementById('no-btn');
+        const music = document.getElementById('bg-music');
+        const musicIcon = document.getElementById('music-control');
+        let musicStarted = false;
+
+        const noTexts = ["Are you sure?", "Wrong choice", "Try again 😏", "Nice try", "Think again! 😜", "You can't catch me!"];
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                musicIcon.innerText = "🔊";
+                musicStarted = true;
+            } else {
+                music.pause();
+                musicIcon.innerText = "🔇";
+            }
+        }
+
+        function dodge() {
+            if (!musicStarted) toggleMusic();
+            
+            // Random position logic
+            const padding = 50;
+            const container = document.querySelector('.btn-container').getBoundingClientRect();
+            
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+            
+            const randomX = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const randomY = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+            
+            // Change text
+            noBtn.innerText = noTexts[Math.floor(Math.random() * noTexts.length)];
+        }
+
+        function celebrate() {
+            if (!musicStarted) toggleMusic();
+            
+            // Confetti
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+
+            // Floating Emojis
+            const emojis = ['💖', '😍', '🥰', '✨', '❤️'];
+            for(let i=0; i<15; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'floating-emoji';
+                    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.bottom = '-10%';
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), 3000);
+                }, i * 200);
+            }
+
+            // Transition to Letter
+            setTimeout(() => {
+                document.getElementById('screen-question').classList.remove('active');
+                document.getElementById('screen-letter').classList.add('active');
+                document.getElementById('name-container').style.display = 'block';
+            }, 1500);
+        }
+
+        function endExperience() {
+            // Fade out music
+            const fadeAudio = setInterval(() => {
+                if (music.volume > 0.05) {
+                    music.volume -= 0.05;
+                } else {
+                    music.pause();
+                    clearInterval(fadeAudio);
+                }
+            }, 200);
+
+            // Fade screen
+            const final = document.getElementById('final-screen');
+            final.style.display = 'flex';
+            setTimeout(() => {
+                final.style.opacity = '1';
+                document.body.style.background = 'black';
+            }, 100);
+
+            // Close/Fade to black
+            setTimeout(() => {
+                final.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.innerHTML = '';
+                }, 2000);
+            }, 4000);
+        }
+
+        // Particle Heart Assembler (Visual Decoration)
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `rgba(255, ${Math.random() * 100 + 100}, ${Math.random() * 100 + 100}, 0.6)`;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 40; i++) particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+    </script>
+</body>
+</html>
